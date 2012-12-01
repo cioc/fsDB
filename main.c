@@ -4,8 +4,9 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include <pthread.h>
+#include "thread_pool.h"
 
-void *block_slave(void *);
+void *pool_func(void *);
 
 //globals
 char *path;
@@ -14,7 +15,7 @@ uint32_t port;
 uint32_t thread_count;
 
 void *
-block_slave(void *args)
+pool_func(void *args)
 {
 	printf("hello from %d\n", (uint32_t )args);
   return NULL;	
@@ -36,16 +37,12 @@ main(int argc, char **args)
 	port = strtol(args[3], &temp, 10);
 	thread_count = strtol(args[4], &temp, 10); 
 
-	//This just looks like a pthreads tutorial...sigh...
+	thread_pool pool;
+	init_pool(&pool, thread_count, &pool_func);
 
-	pthread_t threads[thread_count];
-
-	for (int i = 0; i < thread_count; ++i) {
-		pthread_create(&threads[i],  NULL, &block_slave, (void *)i);				
-	}
-  for (int i = 0; i < thread_count; ++i) {
-		pthread_join(threads[i], NULL);
-	}
+	start_pool(&pool);
+	wait_pool(&pool);
+	free_pool(&pool);
 	
 	exit(0);
 }
