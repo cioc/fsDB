@@ -42,21 +42,13 @@ wait_pool(thread_pool *pool)
 	uint8_t c = pool->thread_count;
 
 	for (uint8_t i = 0; i < c; ++i) {
-		pthread_join(pool->threads + i, NULL);
+		pthread_join(*(pool->threads + i), NULL);
 	}
 }
 
 uint8_t 
 free_pool(thread_pool *pool)
 {
-	uint8_t c = pool->thread_count;
-	uint8_t result;
-	for (uint8_t i = 0; i < c; ++i) {
-		result = pthread_detach(*(pool->threads + i));
-		if (result != 0) {
-			return result;
-		}
-	}
 	free(pool->threads);
 	return 0;
 }

@@ -14,6 +14,8 @@ uint64_t blocksize;
 uint32_t port;
 uint32_t thread_count;
 
+thread_pool pool;
+
 void *
 pool_func(void *args)
 {
@@ -37,7 +39,6 @@ main(int argc, char **args)
 	port = strtol(args[3], &temp, 10);
 	thread_count = strtol(args[4], &temp, 10); 
 
-	thread_pool pool;
 	init_pool(&pool, thread_count, &pool_func);
 
 	start_pool(&pool);
