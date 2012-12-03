@@ -1,13 +1,20 @@
 all: fsDB
 
-fsDB: main.o thread_pool.o
-	gcc main.o thread_pool.o -o fsDB -lpthread
+objs = main.o thread_pool.o buffer.o
+libs = -lpthread
+cflags = -std=gnu99
+
+fsDB: $(objs)
+	gcc $(objs) -o fsDB $(libs)
 
 main.o: main.c 
-	gcc -std=gnu99 -c main.c -lpthread
+	gcc $(cflags) -c main.c $(libs)
 
 thread_pool.o: thread_pool.c
-	gcc -std=gnu99 -c thread_pool.c -lpthread
+	gcc $(cflags) -c thread_pool.c $(libs)
+
+buffer.o: buffer.c
+	gcc $(cflags) -c buffer.c $(libs)
 
 clean:
 	rm -rf *.o fsDB

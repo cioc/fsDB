@@ -1,32 +1,32 @@
 #ifndef BUFFER_H
 #define BUFFER_H
 
-//buffer is a lazily allocated array of objects
+//buffer is a semi-lazily allocated array of structs
 
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdint.h>
 
-enum {
+typedef enum {
 	UNALLOCATED,
 	USED,
 	UNUSED
-} BUFFER_ELEM_STATE;
+} buffer_enum_state;
 
 typedef struct {
-	BUFFER_ELEM_STATE state;
+	buffer_enum_state state;
 	void *item;
 } buffer_elem;
 
 typedef struct {
 	uint32_t max_items;
+	uint32_t usual_items;
 	size_t item_size;
- 	uint32_t item_count;
 	buffer_elem *items;
 } buffer;
 
-bool init_buffer(buffer *b, size_t );
-uint32_t insert(buffer *b, void *data);
-void *remove(buffer *b, uint32_t index);
-
+bool init_buffer(buffer *, size_t, uint32_t, uint32_t);
+uint32_t insert_buffer(buffer *, void *);
+void remove_buffer(buffer *, uint32_t);
+void free_buffer(buffer *);
 #endif
