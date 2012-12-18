@@ -18,17 +18,12 @@ typedef struct {
   void *(*consume_function)(void *);
 } producer_consumer;
 
-typedef struct {
-  producer_consumer *prod_cons;
-  void *obj;
-} producer_consumer_obj_pass;
-
-void produce(void *);
+void produce(producer_consumer *, void *);
 bool init_producer_consumer(producer_consumer *prod_cons,
                         uint32_t producers,
                         uint32_t consumers,
                         size_t size_of_obj,
                         void *(*produce_function)(void *),
                         void *(*consume_function)(void *));
-void start_producer_consumer(producer_consumer *prod_cons);
+void start_producer_consumer(producer_consumer *);
 #endif

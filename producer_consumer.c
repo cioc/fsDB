@@ -18,22 +18,23 @@ produce(producer_consumer *prod_cons, void *obj)
 {
   pthread_cond_wait(prod_cons->empty, prod_cons->mutex_empty);  
   pthread_mutex_lock(prod_cons->mutex);
-  insert_buffer(prod_cons->buf, obj); 
+  buffer_insert(prod_cons->buf, obj); 
   pthread_mutex_unlock(prod_cons->mutex);
   pthread_cond_signal(prod_cons->full);
 }
 
-//TODO - ADD ENDLESS LOOP
 void *
 internal_consume(void *prod_cons)
 {
   producer_consumer * pc = (producer_consumer *)prod_cons;
-  pthread_cond_wait(pcop->prod_cons->full, pcop->prod_cons->mutex_full);
-  pthread_mutex_lock(pcop->prod_cons->mutex);
-  void *obj = //TODO - IMPLEMENT A REMOVE_FIRST OPERATION
-  prod_cons->consume_function(obj);
-  pthread_mutex_unlock(pcop->prod_cons->mutex);
-  pthread_cond_signal(pcop->prod_cons->empty);
+  while(1) {
+    pthread_cond_wait(pc->full, pc->mutex_full);
+    pthread_mutex_lock(pc->mutex);
+    void *obj = buffer_top(pc->buf);
+    pthread_mutex_unlock(pc->mutex);
+    pc->consume_function(obj);
+    pthread_cond_signal(pc->empty);
+  }
 }
 
 
@@ -42,8 +43,8 @@ init_producer_consumer( producer_consumer *prod_cons,
                         uint32_t producers,
                         uint32_t consumers,
                         size_t size_of_obj,
-                        void *(*)(void *) produce_function,
-                        void *(*)(void *) consume_function)
+                        void *(*produce_function)(void *),
+                        void *(*consume_function)(void *))
 {
   prod_cons->produce_function = produce_function;
   prod_cons->consume_function = consume_function;
@@ -63,7 +64,7 @@ init_producer_consumer( producer_consumer *prod_cons,
     return false;
   }
   
-  if (!init_buffer( prod_cons->buffer, 
+  if (!buffer_init( prod_cons->buf, 
                     size_of_obj, 
                     NORMAL_BUFFER_ELEMS,
                     MAX_BUFFER_ELEMS)) {

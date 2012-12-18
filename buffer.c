@@ -12,6 +12,7 @@ buffer_init(buffer *b,
   b->max_items = max_items;
   b->usual_items = usual_items;
   b->item_size = s;
+  b->stored_count = 0;
   b->items = (buffer_elem *)malloc(sizeof(buffer_elem) * max_items);
   if (b->items != NULL) {
     for (uint32_t i = 0; i < max_items; ++i) {
@@ -67,7 +68,9 @@ buffer_insert(buffer *b,
   uint32_t indx = find_free(b);
   if (indx > 0) {
     buffer_elem *be = (b->items + indx);
+    be->state = USED;
     memcpy(be->item, data, b->item_size);
+    b->stored_count += 1;
     return indx;
   }
   return -1;
@@ -84,13 +87,23 @@ buffer_remove(buffer *b,
     free(be->item);
     be->state = UNALLOCATED;
   }
+  b->stored_count -= 1;
 }
 
 void *
 buffer_top(buffer *b)
 {
-  buffer_elem *be = b->items;
-  return be->item;
+  if (b->stored_count > 0) {
+    for (uint32_t i = 0; i < b->stored_count; ++i) {
+      if ((b->items + i)->state == USED) {
+        (b->items + i)->state = UNUSED;
+        void *output = (void *)malloc(b->item_size);
+        memcpy(output,(b->items +i)->item, b->item_size);
+        return output; 
+      }
+    }
+  }
+  return NULL;
 }
 
 void

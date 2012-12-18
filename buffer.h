@@ -21,6 +21,7 @@ typedef struct {
 typedef struct {
   uint32_t max_items;
   uint32_t usual_items;
+  uint32_t stored_count;
   size_t item_size;
   buffer_elem *items;
 } buffer;
