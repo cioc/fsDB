@@ -16,11 +16,11 @@ static void *internal_consume(void *);
 void 
 produce(producer_consumer *prod_cons, void *obj)
 {
-	pthread_cond_wait(prod_cons->empty, prod_cons->mutex_empty);	
-	pthread_mutex_lock(prod_cons->mutex);
-	insert_buffer(prod_cons->buf, obj);	
-	pthread_mutex_unlock(prod_cons->mutex);
-	pthread_cond_signal(prod_cons->full);
+  pthread_cond_wait(prod_cons->empty, prod_cons->mutex_empty);	
+  pthread_mutex_lock(prod_cons->mutex);
+  insert_buffer(prod_cons->buf, obj);	
+  pthread_mutex_unlock(prod_cons->mutex);
+  pthread_cond_signal(prod_cons->full);
 }
 
 //TODO - ADD ENDLESS LOOP
