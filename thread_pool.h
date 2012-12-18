@@ -10,11 +10,11 @@
 #include <pthread.h>
 
 typedef struct {
-	uint8_t thread_count;
-	pthread_t *threads;
-	void *(*boot)(void *);
-	bool use_pass;
-	void *pass;
+  uint8_t thread_count;
+  pthread_t *threads;
+  void *(*boot)(void *);
+  bool use_pass;
+  void *pass;
 } thread_pool;
 
 bool init_pool(thread_pool *, uint8_t, void *(*)(void *), void *);

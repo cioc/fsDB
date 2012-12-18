@@ -10,27 +10,27 @@ producer_consumer prod_cons;
 void *
 echo_listener(void *data)
 {
-	printf("LISTENER\n");
-	return NULL;
+  printf("LISTENER\n");
+  return NULL;
 }
 
 void *
 echo_handler(void *data)
 {
-	printf("HANDLER\n");
-	return NULL;
+  printf("HANDLER\n");
+  return NULL;
 }
 
 int 
 main(int argc, char **args)
 {
-	printf("STARTING ECHO SERVER\n");
-	init_producer_consumer(	&prod_cons, 
-													1, 
-													5, 
-													sizeof(int32_t),
-													echo_listener,
-													echo_handler);	
-	start_producer_consumer(&prod_cons);
-	exit(0);
+  printf("STARTING ECHO SERVER\n");
+  init_producer_consumer( &prod_cons, 
+                          1, 
+                          5, 
+                          sizeof(int32_t),
+                          echo_listener,
+                          echo_handler);  
+  start_producer_consumer(&prod_cons);
+  exit(0);
 }

@@ -8,21 +8,21 @@
 #include <stdint.h>
 
 typedef enum {
-	UNALLOCATED,
-	USED,
-	UNUSED
+  UNALLOCATED,
+  USED,
+  UNUSED
 } buffer_enum_state;
 
 typedef struct {
-	buffer_enum_state state;
-	void *item;
+  buffer_enum_state state;
+  void *item;
 } buffer_elem;
 
 typedef struct {
-	uint32_t max_items;
-	uint32_t usual_items;
-	size_t item_size;
-	buffer_elem *items;
+  uint32_t max_items;
+  uint32_t usual_items;
+  size_t item_size;
+  buffer_elem *items;
 } buffer;
 
 bool buffer_init(buffer *, size_t, uint32_t, uint32_t);
