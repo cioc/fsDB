@@ -1,6 +1,6 @@
 all: fsDB
 
-objs = main.o thread_pool.o buffer.o
+objs = main.o thread_pool.o buffer.o producer_consumer.o
 libs = -lpthread
 cflags = -std=gnu99 -Werror
 
@@ -15,6 +15,9 @@ thread_pool.o: thread_pool.c
 
 buffer.o: buffer.c
 	gcc $(cflags) -c buffer.c $(libs)
+
+producer_consumer.o: producer_consumer.c
+	gcc $(cglags) -c producer_consumer.c $(libs)
 
 clean:
 	rm -rf *.o fsDB

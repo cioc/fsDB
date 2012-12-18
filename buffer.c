@@ -4,7 +4,7 @@
 static uint32_t find_free(buffer *);
 
 bool 
-init_buffer(buffer *b, 
+buffer_init(buffer *b, 
 						size_t s, 
 						uint32_t usual_items, 
 						uint32_t max_items)
@@ -61,7 +61,7 @@ find_free(buffer *b)
 }
 
 uint32_t 
-insert_buffer(buffer *b, 
+buffer_insert(buffer *b, 
 							void *data) 
 {
   uint32_t indx = find_free(b);
@@ -74,7 +74,7 @@ insert_buffer(buffer *b,
 }
 
 void
-remove_buffer(buffer *b, 
+buffer_remove(buffer *b, 
 							uint32_t indx)
 {
   buffer_elem *be = (b->items + indx);	
@@ -86,8 +86,15 @@ remove_buffer(buffer *b,
 	}
 }
 
+void *
+buffer_top(buffer *b)
+{
+	buffer_elem *be = b->items;
+	return be->item;
+}
+
 void
-free_buffer(buffer *b) 
+buffer_free(buffer *b) 
 {
 	if (b->usual_items > 0) {
 		buffer_elem *first = (b->items);

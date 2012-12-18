@@ -25,8 +25,9 @@ typedef struct {
 	buffer_elem *items;
 } buffer;
 
-bool init_buffer(buffer *, size_t, uint32_t, uint32_t);
-uint32_t insert_buffer(buffer *, void *);
-void remove_buffer(buffer *, uint32_t);
-void free_buffer(buffer *);
+bool buffer_init(buffer *, size_t, uint32_t, uint32_t);
+uint32_t buffer_insert(buffer *, void *);
+void buffer_remove(buffer *, uint32_t);
+void *buffer_top(buffer *);
+void buffer_free(buffer *);
 #endif

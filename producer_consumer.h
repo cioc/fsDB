@@ -2,6 +2,7 @@
 #define PRODUCER_CONSUMER_H
 
 #include "buffer.h"
+#include "thread_pool.h"
 #include <pthread.h>
 
 typedef struct {
@@ -13,8 +14,8 @@ typedef struct {
 	pthread_cond_t *empty;
 	thread_pool *producer_pool;
 	thread_pool *consumer_pool;
-	void *(*)(void *) produce_function;
-	void *(*)(void *) consume_function;
+	void *(*produce_function)(void *);
+	void *(*consume_function)(void *);
 } producer_consumer;
 
 typedef struct {
@@ -27,7 +28,7 @@ bool init_producer_consumer(producer_consumer *prod_cons,
 												uint32_t producers,
 												uint32_t consumers,
 												size_t size_of_obj,
-												void *(*)(void *) produce_function,
-												void *(*)(void *) consume_function);
+												void *(*produce_function)(void *),
+												void *(*consume_function)(void *));
 void start_producer_consumer(producer_consumer *prod_cons);
 #endif
