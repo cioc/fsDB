@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <pthread.h>
 #include "thread_pool.h"
+#include "buffer.h"
 
 void *pool_func(void *);
 
@@ -15,11 +16,12 @@ uint32_t port;
 uint32_t thread_count;
 
 thread_pool pool;
+buffer access_buffer;
 
 void *
 pool_func(void *args)
 {
-	printf("hello from %d\n", (uint32_t )args);
+	printf("hello from %d\n", (int32_t)((int64_t)args));
   return NULL;	
 }
 
@@ -40,6 +42,13 @@ main(int argc, char **args)
 	thread_count = strtol(args[4], &temp, 10); 
 
 	init_pool(&pool, thread_count, &pool_func);
+	if (init_buffer(&access_buffer, blocksize, 100, 1000)) {
+			
+	} else {
+		printf("Access buffer failed to init.");
+		exit(1);
+	}
+
 
 	start_pool(&pool);
 	wait_pool(&pool);

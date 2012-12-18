@@ -2,7 +2,7 @@ all: fsDB
 
 objs = main.o thread_pool.o buffer.o
 libs = -lpthread
-cflags = -std=gnu99
+cflags = -std=gnu99 -Werror
 
 fsDB: $(objs)
 	gcc $(objs) -o fsDB $(libs)

@@ -27,7 +27,7 @@ start_pool(thread_pool *pool)
 	uint8_t c = pool->thread_count;
 
 	uint8_t result;
-	for (uint8_t i = 0; i < c; ++i) {
+	for (uint64_t i = 0; i < c; ++i) {
 		result = pthread_create(pool->threads + i, NULL, pool->boot, (void *)i);				
 		if (result != 0) {
 			return result;
