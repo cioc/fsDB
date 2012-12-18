@@ -1,4 +1,4 @@
 (fs)DB
 ====
 
-(file system) database 
+(fixed size) database 
