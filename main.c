@@ -25,12 +25,18 @@ int
 main(int argc, char **args)
 {
   printf("STARTING ECHO SERVER\n");
-  init_producer_consumer( &prod_cons, 
-                          1, 
-                          5, 
-                          sizeof(int32_t),
-                          echo_listener,
-                          echo_handler);  
-  start_producer_consumer(&prod_cons);
-  exit(0);
+  bool init_result = init_producer_consumer(&prod_cons, 
+                                            1, 
+                                            5, 
+                                            sizeof(int32_t),
+                                            echo_listener,
+                                            echo_handler);
+  if (init_result) {  
+    printf("INIT SUCCESS\n");
+    start_producer_consumer(&prod_cons);
+    exit(0);
+  } else {
+    printf("INIT FAILURE\n");
+    exit(1);
+  }
 }

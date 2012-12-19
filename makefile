@@ -17,7 +17,7 @@ buffer.o: buffer.c
 	gcc $(cflags) -c buffer.c $(libs)
 
 producer_consumer.o: producer_consumer.c
-	gcc $(cglags) -c producer_consumer.c $(libs)
+	gcc $(cflags) -c producer_consumer.c $(libs)
 
 clean:
 	rm -rf *.o fsDB

@@ -63,18 +63,24 @@ init_producer_consumer( producer_consumer *prod_cons,
                   prod_cons)) {
     return false;
   }
-  
-  if (!buffer_init( prod_cons->buf, 
-                    size_of_obj, 
-                    NORMAL_BUFFER_ELEMS,
-                    MAX_BUFFER_ELEMS)) {
+  prod_cons->buf = (buffer *)malloc(sizeof(buffer)); 
+  if (prod_cons->buf != NULL && !buffer_init( prod_cons->buf, 
+                                              size_of_obj, 
+                                              NORMAL_BUFFER_ELEMS,
+                                              MAX_BUFFER_ELEMS)) {
     return false;
   }
+  prod_cons->mutex = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t)); 
+  prod_cons->mutex_full = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
+  prod_cons->mutex_empty = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
+  prod_cons->full = (pthread_cond_t *)malloc(sizeof(pthread_cond_t));
+  prod_cons->empty = (pthread_cond_t *)malloc(sizeof(pthread_cond_t));
+  
   int32_t r1 = pthread_mutex_init(prod_cons->mutex, NULL);
-  int32_t r2 = pthread_cond_init(prod_cons->full, NULL);
-  int32_t r3 = pthread_cond_init(prod_cons->empty, NULL);
-  int32_t r4 = pthread_mutex_init(prod_cons->mutex_full, NULL);
-  int32_t r5 = pthread_mutex_init(prod_cons->mutex_empty, NULL);
+  int32_t r2 = pthread_mutex_init(prod_cons->mutex_full, NULL);
+  int32_t r3 = pthread_mutex_init(prod_cons->mutex_empty, NULL);
+  int32_t r4 = pthread_cond_init(prod_cons->full, NULL);
+  int32_t r5 = pthread_cond_init(prod_cons->empty, NULL);
   if (r1 && r2 && r3 && r4 && r5) {
     return true;
   }
@@ -84,6 +90,9 @@ init_producer_consumer( producer_consumer *prod_cons,
 void 
 start_producer_consumer(producer_consumer *prod_cons)
 {
+  printf("TACO TACO TACO\n");
   start_pool(prod_cons->producer_pool);
   start_pool(prod_cons->consumer_pool);           
+  wait_pool(prod_cons->producer_pool);
+  wait_pool(prod_cons->consumer_pool);
 }

@@ -38,11 +38,13 @@ start_pool(thread_pool *pool)
   uint8_t result;
   for (uint64_t i = 0; i < c; ++i) {
     if (pool->use_pass) {
+    printf("STARTING HERE 1\n");
     result = pthread_create(pool->threads + i, 
                             NULL, 
                             pool->boot, 
                             pool->pass);    
     } else {
+    printf("STARTING HERE 1\n");
     result = pthread_create(pool->threads + i, 
                             NULL, 
                             pool->boot, 
