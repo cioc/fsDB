@@ -61,6 +61,7 @@ init_producer_consumer( producer_consumer *prod_cons,
                   consumers,
                   internal_consume,
                   prod_cons)) {
+    printf("POOL(S) FAILED TO INIT\n");
     return false;
   }
   prod_cons->buf = (buffer *)malloc(sizeof(buffer)); 
@@ -68,6 +69,7 @@ init_producer_consumer( producer_consumer *prod_cons,
                                               size_of_obj, 
                                               NORMAL_BUFFER_ELEMS,
                                               MAX_BUFFER_ELEMS)) {
+    printf("BUFFER INIT FAILURE\n");
     return false;
   }
   prod_cons->mutex = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t)); 
@@ -81,9 +83,10 @@ init_producer_consumer( producer_consumer *prod_cons,
   int32_t r3 = pthread_mutex_init(prod_cons->mutex_empty, NULL);
   int32_t r4 = pthread_cond_init(prod_cons->full, NULL);
   int32_t r5 = pthread_cond_init(prod_cons->empty, NULL);
-  if (r1 && r2 && r3 && r4 && r5) {
+  if ((r1==0) && (r2==0) && (r3==0) && (r4==0) && (r5==0)) {
     return true;
   }
+  printf("MUTEX / COND VARIABLE SETUP FAILURE\n");
   return false;
 } //END init_producer_consumer
 
