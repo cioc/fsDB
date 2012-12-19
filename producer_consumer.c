@@ -18,6 +18,7 @@ void
 produce(producer_consumer *prod_cons, void *obj)
 { 
   printf("ENTER PRODUCE\n");
+  pthread_mutex_lock(prod_cons->mutex);
   buffer_insert(prod_cons->buf, obj); 
   pthread_mutex_unlock(prod_cons->mutex);
   printf("EXIT PRODUCE\n");

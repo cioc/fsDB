@@ -30,7 +30,7 @@ main(int argc, char **args)
   bool init_result = init_producer_consumer(&prod_cons, 
                                             1, 
                                             5, 
-                                            sizeof(int32_t),
+                                            sizeof(int64_t),
                                             echo_listener,
                                             echo_handler);
   if (init_result) {  

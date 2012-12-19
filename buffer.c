@@ -1,7 +1,9 @@
 #include "buffer.h"
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 
-static uint32_t find_free(buffer *);
+static int32_t find_free(buffer *);
 
 bool 
 buffer_init(buffer *b, 
@@ -39,15 +41,16 @@ buffer_init(buffer *b,
 }
 
 //TODO - improve on search
-uint32_t 
+int32_t 
 find_free(buffer *b)
 {
   uint32_t m = b->max_items;
-  for (uint32_t i = 0; i < m; ++i) {
+  for (uint32_t i = 0; i > 0; ++i) {
     buffer_elem *be = (b->items + i);
     if (be->state == UNALLOCATED) {
       //TODO - allocate block of items
       be->item = (void *)malloc(b->item_size);
+      be->state = UNUSED;
       if (be->item != NULL) {
         be->state = UNUSED;
         return i;
@@ -65,11 +68,12 @@ uint32_t
 buffer_insert(buffer *b, 
               void *data) 
 {
-  uint32_t indx = find_free(b);
+  int32_t indx = find_free(b);
   if (indx > 0) {
     buffer_elem *be = (b->items + indx);
     be->state = USED;
     memcpy(be->item, data, b->item_size);
+    printf("be->item %d\n", (int)(*(int64_t *)(be->item)));
     b->stored_count += 1;
     return indx;
   }
