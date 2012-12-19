@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include <pthread.h>
+#include <semaphore.h>
 #include "producer_consumer.h"
 #include "buffer.h"
 #include "thread_pool.h"
@@ -15,12 +16,11 @@ static void *internal_consume(void *);
 
 void 
 produce(producer_consumer *prod_cons, void *obj)
-{
-  pthread_cond_wait(prod_cons->empty, prod_cons->mutex_empty);  
-  pthread_mutex_lock(prod_cons->mutex);
+{ 
+  printf("ENTER PRODUCE\n");
   buffer_insert(prod_cons->buf, obj); 
   pthread_mutex_unlock(prod_cons->mutex);
-  pthread_cond_signal(prod_cons->full);
+  printf("EXIT PRODUCE\n");
 }
 
 void *
@@ -28,12 +28,10 @@ internal_consume(void *prod_cons)
 {
   producer_consumer * pc = (producer_consumer *)prod_cons;
   while(1) {
-    pthread_cond_wait(pc->full, pc->mutex_full);
     pthread_mutex_lock(pc->mutex);
     void *obj = buffer_top(pc->buf);
     pthread_mutex_unlock(pc->mutex);
     pc->consume_function(obj);
-    pthread_cond_signal(pc->empty);
   }
 }
 
@@ -73,20 +71,9 @@ init_producer_consumer( producer_consumer *prod_cons,
     return false;
   }
   prod_cons->mutex = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t)); 
-  prod_cons->mutex_full = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
-  prod_cons->mutex_empty = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
-  prod_cons->full = (pthread_cond_t *)malloc(sizeof(pthread_cond_t));
-  prod_cons->empty = (pthread_cond_t *)malloc(sizeof(pthread_cond_t));
-  
-  int32_t r1 = pthread_mutex_init(prod_cons->mutex, NULL);
-  int32_t r2 = pthread_mutex_init(prod_cons->mutex_full, NULL);
-  int32_t r3 = pthread_mutex_init(prod_cons->mutex_empty, NULL);
-  int32_t r4 = pthread_cond_init(prod_cons->full, NULL);
-  int32_t r5 = pthread_cond_init(prod_cons->empty, NULL);
-  if ((r1==0) && (r2==0) && (r3==0) && (r4==0) && (r5==0)) {
+  if (pthread_mutex_init(prod_cons->mutex, NULL) == 0) {
     return true;
   }
-  printf("MUTEX / COND VARIABLE SETUP FAILURE\n");
   return false;
 } //END init_producer_consumer
 

@@ -10,15 +10,17 @@ producer_consumer prod_cons;
 void *
 echo_listener(void *data)
 {
-  printf("LISTENER\n");
-  return NULL;
+  while (1) {
+    printf("LISTENER\n");
+    int64_t number = 5;
+    produce(&prod_cons,(void *) number);
+  }
 }
 
 void *
 echo_handler(void *data)
 {
-  printf("HANDLER\n");
-  return NULL;
+  printf("Woopie number: %d\n", (int)(int64_t)(data));
 }
 
 int 

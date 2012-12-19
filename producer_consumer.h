@@ -4,14 +4,11 @@
 #include "buffer.h"
 #include "thread_pool.h"
 #include <pthread.h>
+#include <semaphore.h>
 
 typedef struct {
   buffer *buf;
   pthread_mutex_t *mutex;
-  pthread_mutex_t *mutex_full;
-  pthread_mutex_t *mutex_empty;
-  pthread_cond_t *full;
-  pthread_cond_t *empty;
   thread_pool *producer_pool;
   thread_pool *consumer_pool;
   void *(*produce_function)(void *);
