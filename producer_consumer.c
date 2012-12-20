@@ -4,24 +4,32 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include <pthread.h>
-#include <semaphore.h>
 #include "producer_consumer.h"
-#include "buffer.h"
 #include "thread_pool.h"
-
-#define NORMAL_BUFFER_ELEMS 100
-#define MAX_BUFFER_ELEMS 1000
 
 static void *internal_consume(void *);
 
 void 
 produce(producer_consumer *prod_cons, void *obj)
 { 
-  printf("ENTER PRODUCE\n");
-  pthread_mutex_lock(prod_cons->mutex);
-  buffer_insert(prod_cons->buf, obj); 
-  pthread_mutex_unlock(prod_cons->mutex);
-  printf("EXIT PRODUCE\n");
+  pthread_mutex_lock(prod_cons->cond_mutex);
+  pthread_mutex_lock(prod_cond->exclusion_mutex);
+  uint32_t buffer_items = prod_cons->buffer_tail - prod_cons->buffer_head;
+  if (buffer_items < prod_cons->buffer_max) {
+    if (prod_cons->buffer_head > 0) {
+      *(prod_cons->buffer + (buffer_head - 1)) = obj;
+      prod_cons->buffer_head -= 1;
+    } else {
+      *(prod_cons->buffer + buffer_count) = obj; 
+      prod_cons->buffer_count += 1;
+    }
+    pthread_mutex_unlock(prod_cons->exclusion_mutex);
+    pthread_mutex_unlock(prod_cons->cond_mutex);
+    pthread_cond_signal(prod_cons->full);
+  } else {
+    pthread_mutex_unlock(prod_cons->exclusion_mutex);
+    pthread_cond_wait(prod_cons->empty, prod_cond->cond_mutex);
+  }
 }
 
 void *
@@ -29,10 +37,19 @@ internal_consume(void *prod_cons)
 {
   producer_consumer * pc = (producer_consumer *)prod_cons;
   while(1) {
-    pthread_mutex_lock(pc->mutex);
-    void *obj = buffer_top(pc->buf);
-    pthread_mutex_unlock(pc->mutex);
-    pc->consume_function(obj);
+    pthread_mutex_lock(prod_cons->cond_mutex);
+    pthread_mutex_lock(prod_cons->exclusion_mutex);
+    uint32_t buffer_items = prod_cons->buffer_tail - prod_cons->buffer_head;
+    if (buffer_items > 0) {
+      //TODO - START HERE 
+      pthread_mutex_unlock(prod_cons->exclusion_mutex);
+      pthread_mutex_unlock(prod_cons->cond_mutex);
+      pthrad_cond_signal(prod_cons->empty);
+      pc->consume_function(obj);
+    } else {
+      pthread_mutex_unlock(prod_cons->exclusion_mutex);
+      pthread_cond_wait(prod_cons->full, prod_cond->cond_mutex);  
+    }
   }
 }
 
@@ -42,6 +59,7 @@ init_producer_consumer( producer_consumer *prod_cons,
                         uint32_t producers,
                         uint32_t consumers,
                         size_t size_of_obj,
+                        uint32_t max_queue,
                         void *(*produce_function)(void *),
                         void *(*consume_function)(void *))
 {
@@ -63,16 +81,19 @@ init_producer_consumer( producer_consumer *prod_cons,
     printf("POOL(S) FAILED TO INIT\n");
     return false;
   }
-  prod_cons->buf = (buffer *)malloc(sizeof(buffer)); 
-  if (prod_cons->buf != NULL && !buffer_init( prod_cons->buf, 
-                                              size_of_obj, 
-                                              NORMAL_BUFFER_ELEMS,
-                                              MAX_BUFFER_ELEMS)) {
-    printf("BUFFER INIT FAILURE\n");
-    return false;
-  }
-  prod_cons->mutex = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t)); 
-  if (pthread_mutex_init(prod_cons->mutex, NULL) == 0) {
+  prod_cons->buffer_max = max_queue;
+  prod_cons->buffer_tail = 0;
+  prod_cons->buffer_head = 0;
+  prod_cons->buffer = (void **)malloc(sizeof(void *) * max_queue);
+  prod_cons->exclusion_mutex = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t)); 
+  prod_cons->cond_mutex = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
+  prod_cons->full = (pthread_cond_t *)malloc(sizeof(pthread_cond_t)); 
+  prod_cons->empty = (pthread_cond_t *)malloc(sizeof(pthread_cond_t)); 
+  int r1 = pthread_mutex_init(prod_cons->exclusion_mutex, NULL);
+  int r2 = pthread_mutex_init(prod_cons->cond_mutex, NULL);
+  int r3 = pthread_cond_init(prod_cons->full, NULL);
+  int r4 = pthread_cond_init(prod_cons->empty, NULL);  
+  if (!r1 && !r2 && !r3 && !r4) {
     return true;
   }
   return false;
@@ -81,7 +102,6 @@ init_producer_consumer( producer_consumer *prod_cons,
 void 
 start_producer_consumer(producer_consumer *prod_cons)
 {
-  printf("TACO TACO TACO\n");
   start_pool(prod_cons->producer_pool);
   start_pool(prod_cons->consumer_pool);           
   wait_pool(prod_cons->producer_pool);
