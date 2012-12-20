@@ -31,6 +31,7 @@ main(int argc, char **args)
                                             1, 
                                             5, 
                                             sizeof(int64_t),
+                                            100,
                                             echo_listener,
                                             echo_handler);
   if (init_result) {  

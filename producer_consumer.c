@@ -13,42 +13,53 @@ void
 produce(producer_consumer *prod_cons, void *obj)
 { 
   pthread_mutex_lock(prod_cons->cond_mutex);
-  pthread_mutex_lock(prod_cond->exclusion_mutex);
+  produce_loop: 
+  pthread_mutex_lock(prod_cons->exclusion_mutex);
   uint32_t buffer_items = prod_cons->buffer_tail - prod_cons->buffer_head;
   if (buffer_items < prod_cons->buffer_max) {
     if (prod_cons->buffer_head > 0) {
-      *(prod_cons->buffer + (buffer_head - 1)) = obj;
-      prod_cons->buffer_head -= 1;
-    } else {
-      *(prod_cons->buffer + buffer_count) = obj; 
-      prod_cons->buffer_count += 1;
-    }
+      int counter = 0;
+      //shift
+      for (int i = prod_cons->buffer_head; i < prod_cons->buffer_tail; ++i) {
+        *(prod_cons->buffer + counter) = *(prod_cons->buffer + i);
+      }
+      prod_cons->buffer_head = 0;
+    } 
+    prod_cons->buffer_head = 0;
+    prod_cons->buffer_tail = buffer_items;
+    *(prod_cons->buffer + buffer_items) = obj; 
+    prod_cons->buffer_tail += 1;
     pthread_mutex_unlock(prod_cons->exclusion_mutex);
     pthread_mutex_unlock(prod_cons->cond_mutex);
     pthread_cond_signal(prod_cons->full);
   } else {
     pthread_mutex_unlock(prod_cons->exclusion_mutex);
-    pthread_cond_wait(prod_cons->empty, prod_cond->cond_mutex);
+    pthread_cond_wait(prod_cons->empty, prod_cons->cond_mutex);
+    goto produce_loop;
   }
 }
 
 void *
-internal_consume(void *prod_cons)
+internal_consume(void *pc)
 {
-  producer_consumer * pc = (producer_consumer *)prod_cons;
+  producer_consumer * prod_cons = (producer_consumer *)pc;
   while(1) {
     pthread_mutex_lock(prod_cons->cond_mutex);
+    consume_loop:
     pthread_mutex_lock(prod_cons->exclusion_mutex);
     uint32_t buffer_items = prod_cons->buffer_tail - prod_cons->buffer_head;
     if (buffer_items > 0) {
-      //TODO - START HERE 
+      void *item = (void *)malloc(prod_cons->buffer_item_size);
+      memcpy(item, *(prod_cons->buffer + prod_cons->buffer_head), prod_cons->buffer_item_size); 
+      prod_cons->buffer_head += 1;
       pthread_mutex_unlock(prod_cons->exclusion_mutex);
       pthread_mutex_unlock(prod_cons->cond_mutex);
-      pthrad_cond_signal(prod_cons->empty);
-      pc->consume_function(obj);
+      pthread_cond_signal(prod_cons->empty);
+      prod_cons->consume_function(item);
     } else {
       pthread_mutex_unlock(prod_cons->exclusion_mutex);
-      pthread_cond_wait(prod_cons->full, prod_cond->cond_mutex);  
+      pthread_cond_wait(prod_cons->full, prod_cons->cond_mutex);  
+      goto consume_loop;
     }
   }
 }
@@ -82,6 +93,7 @@ init_producer_consumer( producer_consumer *prod_cons,
     return false;
   }
   prod_cons->buffer_max = max_queue;
+  prod_cons->buffer_item_size = size_of_obj;
   prod_cons->buffer_tail = 0;
   prod_cons->buffer_head = 0;
   prod_cons->buffer = (void **)malloc(sizeof(void *) * max_queue);

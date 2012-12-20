@@ -4,6 +4,7 @@
 #include "thread_pool.h"
 #include <pthread.h>
 
+
 typedef struct {
   pthread_mutex_t *cond_mutex;
   pthread_mutex_t *exclusion_mutex;
