@@ -24,9 +24,9 @@ produce(producer_consumer *prod_cons, void *obj)
         *(prod_cons->buffer + counter) = *(prod_cons->buffer + i);
       }
       prod_cons->buffer_head = 0;
+      prod_cons->buffer_head = 0;
+      prod_cons->buffer_tail = buffer_items;
     } 
-    prod_cons->buffer_head = 0;
-    prod_cons->buffer_tail = buffer_items;
     *(prod_cons->buffer + buffer_items) = obj; 
     prod_cons->buffer_tail += 1;
     pthread_mutex_unlock(prod_cons->exclusion_mutex);
@@ -47,9 +47,13 @@ internal_consume(void *pc)
     pthread_mutex_lock(prod_cons->cond_mutex);
     consume_loop:
     pthread_mutex_lock(prod_cons->exclusion_mutex);
-    uint32_t buffer_items = prod_cons->buffer_tail - prod_cons->buffer_head;
+    int32_t buffer_items = prod_cons->buffer_tail - prod_cons->buffer_head;
     if (buffer_items > 0) {
       void *item = (void *)malloc(prod_cons->buffer_item_size);
+      if (item == NULL) {
+        printf("MALLOC FAIL IN internal_consume\n");
+        exit(1);
+      }
       memcpy(item, *(prod_cons->buffer + prod_cons->buffer_head), prod_cons->buffer_item_size); 
       prod_cons->buffer_head += 1;
       pthread_mutex_unlock(prod_cons->exclusion_mutex);
@@ -97,6 +101,10 @@ init_producer_consumer( producer_consumer *prod_cons,
   prod_cons->buffer_tail = 0;
   prod_cons->buffer_head = 0;
   prod_cons->buffer = (void **)malloc(sizeof(void *) * max_queue);
+  if (prod_cons->buffer == NULL) {
+    printf("init_producer_consumer failed to allocate buffer\n");
+    return false;
+  }
   prod_cons->exclusion_mutex = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t)); 
   prod_cons->cond_mutex = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
   prod_cons->full = (pthread_cond_t *)malloc(sizeof(pthread_cond_t)); 
@@ -114,8 +122,10 @@ init_producer_consumer( producer_consumer *prod_cons,
 void 
 start_producer_consumer(producer_consumer *prod_cons)
 {
-  start_pool(prod_cons->producer_pool);
-  start_pool(prod_cons->consumer_pool);           
-  wait_pool(prod_cons->producer_pool);
-  wait_pool(prod_cons->consumer_pool);
+  int r1 = start_pool(prod_cons->producer_pool);
+  int r2 = start_pool(prod_cons->consumer_pool);           
+  if (!r1 && !r2) {
+    wait_pool(prod_cons->producer_pool);
+    wait_pool(prod_cons->consumer_pool);
+  }
 }

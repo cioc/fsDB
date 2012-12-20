@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <unistd.h>
 #include <sys/types.h>
+#include <pthread.h>
 #include "producer_consumer.h"
 
 producer_consumer prod_cons;
@@ -10,17 +12,22 @@ producer_consumer prod_cons;
 void *
 echo_listener(void *data)
 {
-  while (1) {
+  int i = 0; 
+  while (i < 10) {
     printf("LISTENER\n");
-    int64_t number = 5;
-    produce(&prod_cons,(void *) number);
+    int64_t *number = (int64_t *)malloc(sizeof(int64_t));
+    *number = i;
+    produce(&prod_cons, (void *)number);
+    ++i;
   }
 }
 
 void *
 echo_handler(void *data)
 {
-  printf("Woopie number: %d\n", (int)(int64_t)(data));
+  pthread_t self = pthread_self(); 
+  printf("%d says Woopie number: %d\n", (int)self, (int)*((int64_t *)(data)));
+  sleep(1);  
 }
 
 int 
