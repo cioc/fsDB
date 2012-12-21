@@ -27,6 +27,7 @@ echo_handler(void *data)
 {
   pthread_t self = pthread_self(); 
   printf("%d says Woopie number: %d\n", (int)self, (int)*((int64_t *)(data)));
+  free(data);
   sleep(1);  
 }
 

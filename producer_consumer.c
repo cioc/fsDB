@@ -55,6 +55,7 @@ internal_consume(void *pc)
         exit(1);
       }
       memcpy(item, *(prod_cons->buffer + prod_cons->buffer_head), prod_cons->buffer_item_size); 
+      free(*(prod_cons->buffer + prod_cons->buffer_head));
       prod_cons->buffer_head += 1;
       pthread_mutex_unlock(prod_cons->exclusion_mutex);
       pthread_mutex_unlock(prod_cons->cond_mutex);
