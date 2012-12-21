@@ -1,6 +1,3 @@
-[submodule "C-Concurrency-Generics"]
-	path = C-Concurrency-Generics
-	url = https://github.com/cioc/C-Concurrency-Generics.git
 [submodule "concurrency_lib"]
 	path = concurrency_lib
 	url = https://github.com/cioc/C-Concurrency-Generics.git
