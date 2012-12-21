@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <pthread.h>
-#include "producer_consumer.h"
+#include "../src/producer_consumer.h"
 
 producer_consumer prod_cons;
 
