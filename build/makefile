@@ -1,7 +1,7 @@
 concur_dir = ../concurrency_lib/build
 
 libs = -lpthread
-cflags = -std=gnu99 -Werror
+cflags = -std=gnu99 -Werror -I ../concurrency_lib/src
 
 src_path = ../src
 
